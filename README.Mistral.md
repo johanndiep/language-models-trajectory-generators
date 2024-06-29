@@ -171,13 +171,17 @@ Sometimes the model tried to fulfill the task, but was not successful, yet close
 
 To measure the performance of the base model and the fine-tuned model, we tested with 4 different commands, to test the ability of the model to deal with singular objects. The reasoning was that if the model is able to handle single objects, the testing would move to multiple objects. Each command was tested 5 times on each model, for consistency, with the `bottle` and `box` items referring to `mustard bottle` and `cracker box`. The results are presented in the table below:
 
+
+<center>Table: Model success rate (in %) on user commands
+
 |  | Base Mistral-7B  | Fine-tuned Mistral-7B |
 |:----|:----------------:|:------------------:|
-| move box left      | 0/5   | 0/5  |
-| pick up bottle     | 0/5   | 3/5   |
-| knock over bottle  | 0/5   | 1/5   |
+| move box left      | 0%   | 0%  |
+| pick up bottle     | 0%   | 60%   |
+| knock over bottle  | 0%   | 20%   |
 |   |    |      |
 
+</center>
 
 The fine-tuned model has shown great improvement on all tasks. Even on the `move box left` task, that seeminly has stayed at 0/6, the fine-tuning model performs much better, as it was able to generate 3-4 times reasonable trajectories, but was erroneous at some steps, and missed the target. The results that the fine-tuned Mistral-7B model shows are even more impressive, given:
 - the small fine-tuning data provided to the model (130 examples)
