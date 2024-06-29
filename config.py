@@ -2,7 +2,7 @@ import math
 import random
 
 # Simulation
-control_dt = 1. / 240.
+control_dt = 1.0 / 240.0
 margin_error = 0.001
 gripper_margin_error = 0.0001
 joint_margin_error = 0.01
