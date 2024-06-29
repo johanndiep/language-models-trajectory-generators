@@ -24,6 +24,7 @@ from prompts.task_failure_prompt import TASK_FAILURE_PROMPT
 from prompts.task_summary_prompt import TASK_SUMMARY_PROMPT
 from config import OK, PROGRESS, FAIL, ENDC
 
+
 sys.path.append("./XMem/")
 print = functools.partial(print, flush=True)
 
@@ -31,13 +32,26 @@ from XMem.model.network import XMem
 
 if __name__ == "__main__":
 
-    openai.api_key = os.getenv("OPENAI_API_KEY")
+    def validate_language_model(value):
+        """
+        Define function to check the type of language model input to allow for
+        the default GPT models, as well as a fine-tuned Mistral model
+        """
+        default_choices = ["gpt-4", "gpt-4-32k", "gpt-3.5-turbo", "gpt-3.5-turbo-16k"]
+        if value in default_choices or value.startswith("ft:"):
+            return value
+        else:
+            raise argparse.ArgumentTypeError(
+                f"Invalid language model: '{value}'. Must be one of {default_choices} or be a Mistral fine_tuned_model (starting with 'ft:')."
+            )
 
     # Parse args
     parser = argparse.ArgumentParser(description="Main Program.")
-    parser.add_argument("-lm", "--language_model", choices=["gpt-4", "gpt-4-32k", "gpt-3.5-turbo", "gpt-3.5-turbo-16k"], default="gpt-4", help="select language model")
+    parser.add_argument("-lm", "--language_model", type=validate_language_model, default="gpt-4", 
+                        help="select language model: either GPT model, or Mistral finetuned model")
     parser.add_argument("-r", "--robot", choices=["sawyer", "franka"], default="sawyer", help="select robot")
     parser.add_argument("-m", "--mode", choices=["default", "debug"], default="default", help="select mode to run")
+    parser.add_argument("-t", "--token", help="Mistral token/key")
     args = parser.parse_args()
 
     # Logging
@@ -89,7 +103,10 @@ if __name__ == "__main__":
     new_prompt = MAIN_PROMPT.replace("[INSERT EE POSITION]", str(config.ee_start_position)).replace("[INSERT TASK]", command)
 
     logger.info(PROGRESS + "Generating ChatGPT output..." + ENDC)
-    messages = models.get_chatgpt_output(args.language_model, new_prompt, messages, "system")
+    if args.language_model.startswith("gpt"):
+        messages = models.get_chatgpt_output(args.language_model, new_prompt, messages, "system")
+    else:
+        messages = models.get_mistral_output(args.language_model, args.token, new_prompt, messages, "system")
     logger.info(OK + "Finished generating ChatGPT output!" + ENDC)
 
     while True:
@@ -140,7 +157,10 @@ if __name__ == "__main__":
                     new_prompt += "\n"
 
                     logger.info(PROGRESS + "Generating ChatGPT output..." + ENDC)
-                    messages = models.get_chatgpt_output(args.language_model, new_prompt, messages, "user")
+                    if args.language_model.startswith("gpt"):
+                        messages = models.get_chatgpt_output(args.language_model, new_prompt, messages, "user")
+                    else:
+                        messages = models.get_mistral_output(args.language_model, args.token, new_prompt, messages, "user")
                     logger.info(OK + "Finished generating ChatGPT output!" + ENDC)
 
                     logger.info(PROGRESS + "RETRYING TASK..." + ENDC)
@@ -154,7 +174,10 @@ if __name__ == "__main__":
                     error = False
 
                     logger.info(PROGRESS + "Generating ChatGPT output..." + ENDC)
-                    messages = models.get_chatgpt_output(args.language_model, new_prompt, messages, "system")
+                    if args.language_model.startswith("gpt"):
+                        messages = models.get_chatgpt_output(args.language_model, new_prompt, messages, "system")
+                    else:
+                        messages = models.get_mistral_output(args.language_model, args.token, new_prompt, messages, "user")
                     logger.info(OK + "Finished generating ChatGPT output!" + ENDC)
 
                     api.failed_task = False
@@ -162,7 +185,10 @@ if __name__ == "__main__":
                 else:
 
                     logger.info(PROGRESS + "Generating ChatGPT output..." + ENDC)
-                    messages = models.get_chatgpt_output(args.language_model, new_prompt, messages, "user")
+                    if args.language_model.startswith("gpt"):
+                        messages = models.get_chatgpt_output(args.language_model, new_prompt, messages, "user")
+                    else:
+                        messages = models.get_mistral_output(args.language_model, args.token, new_prompt, messages, "user")
                     logger.info(OK + "Finished generating ChatGPT output!" + ENDC)
 
         logger.info(OK + "FINISHED TASK!" + ENDC)
@@ -170,7 +196,10 @@ if __name__ == "__main__":
         new_prompt = input("Enter a command: ")
 
         logger.info(PROGRESS + "Generating ChatGPT output..." + ENDC)
-        messages = models.get_chatgpt_output(args.language_model, new_prompt, messages, "user")
+        if args.language_model.startswith("gpt"):
+            messages = models.get_chatgpt_output(args.language_model, new_prompt, messages, "user")
+        else:
+            messages = models.get_mistral_output(args.language_model, args.token, new_prompt, messages, "user")
         logger.info(OK + "Finished generating ChatGPT output!" + ENDC)
 
         api.completed_task = False

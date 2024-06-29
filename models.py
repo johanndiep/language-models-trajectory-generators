@@ -1,12 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
+import requests
 import torch
 import config
 from openai import OpenAI
 from PIL import Image
 from torchvision import transforms
 from torchvision.utils import draw_bounding_boxes, draw_segmentation_masks
+
 
 sys.path.append("./XMem/")
 
@@ -42,8 +44,6 @@ def get_langsam_output(image, model, segmentation_texts, segmentation_count):
 
     return masks, boxes, phrases
 
-
-
 def get_chatgpt_output(model, new_prompt, messages, role, file=sys.stdout):
 
     print(role + ":", file=file)
@@ -76,7 +76,43 @@ def get_chatgpt_output(model, new_prompt, messages, role, file=sys.stdout):
 
     return messages
 
+def get_mistral_output(model, api_key, new_prompt, messages, role, file=sys.stdout):
+    """
+    Use Mistral API with requests for curl commands to define stopwords and directly
+    use the messages variable structure, instead of changing to ChatMessage object.
+    """
 
+    print("user" + ":", file=file)
+    print(new_prompt, file=file)
+    messages.append({"role": role, "content":new_prompt})
+
+    # Call Mistral model with requests
+    url = "https://api.mistral.ai/v1/chat/completions"
+    headers = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": f"Bearer {api_key}"
+    }
+    data = {
+        "model": model,
+        "messages": messages,
+        "stop": ["stop", "Stopping Generation"]
+    }
+
+    response = requests.post(url, headers=headers, json=data)
+    response_json = response.json()
+    
+    # Clean up response from API call to extract only response and correct ending
+    assistant_response = response_json["choices"][0]['message']['content'].rstrip()
+    assistant_response = assistant_response.replace("Stopping Generation", "").rstrip()
+    # Fix ending if python code is incorrectly enclosed
+    if not assistant_response.endswith("```"):
+        assistant_response += "\n```"
+    print("assistant: " + assistant_response, file=file)
+
+    messages.append({"role":"assistant", "content":assistant_response})
+
+    return messages
 
 def get_xmem_output(model, device, trajectory_length):
 

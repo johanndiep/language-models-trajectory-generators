@@ -211,7 +211,10 @@ class API:
             messages = []
 
             self.logger.info(PROGRESS + "Generating ChatGPT output..." + ENDC)
-            messages = models.get_chatgpt_output(self.args.language_model, new_prompt, messages, "system", file=sys.stderr)
+            if self.args.language_model.startswith("gpt"):
+                messages = models.get_chatgpt_output(self.args.language_model, new_prompt, messages, "system", file=sys.stderr)
+            else:
+                messages = models.get_mistral_output(self.args.language_model, self.args.token, new_prompt, messages, "system")
             self.logger.info(OK + "Finished generating ChatGPT output!" + ENDC)
 
             code_block = messages[-1]["content"].split("```python")
