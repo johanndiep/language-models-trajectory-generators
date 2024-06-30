@@ -1,3 +1,12 @@
+## Introduction to Le Chat Robot
+
+![Title](https://github.com/johanndiep/language-models-trajectory-generators/blob/main_mistral/assets/title.png)
+
+Controlling robotic arms requires a profound grasp of concepts like object detection and arm trajectory planning, restricting their use to specialized engineers and researchers. To democratize access to these advanced machines (e.g. for retail workers or farmers), it is important to enable human-like control. 
+
+Thus, the project aims to fine-tune the Mistral LLM via its API to generate low-level commands from user commands and camera inputs, directly applicable to the robot actuators. Conducted solely in simulation, this project seeks to bridge the accessibility gap for advanced robotic technology.
+
+This work is based on the publication ["Language Models as Zero-Shot Trajectory Generators"](https://arxiv.org/abs/2310.11604). 
 
 ## Starting the Simulator with Mistral
 
