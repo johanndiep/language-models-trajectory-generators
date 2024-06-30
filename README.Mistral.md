@@ -171,7 +171,10 @@ The finetuning training was done on 5 epochs, to test the model performance, com
 
 ![Successfully picking up the bottle](https://github.com/johanndiep/language-models-trajectory-generators/blob/main_mistral/finetune_results/pick_up_bottle_success_1.gif)
 
-Sometimes the model tried to fulfill the task, but was not successful, yet close. As examples, in `finetune_results/knock_over_bottle.mp4` it can be seen that the model tried to horizontally knock the mustard bottle over, but it stopped right before the bottle due to poor trajectory planning. In `finetune_results/move_box_left_fail_2.mp4` the robot tried to pick up the box, then move it left, just as instructed, and place it down; the only issue with the run was that it missed the box initially. These failures show that the model has gained understanding from the fine-tuning on how to control the robot and plan trajectories. The base Mistral-7B model produced many more errors and was not able to plan and execute almost any trajectories, and even it did, they were incoherent. 
+Sometimes the model tried to fulfill the task, but was not successful, yet close. As examples, in `finetune_results/knock_over_bottle.mp4` it can be seen that the model tried to horizontally knock the mustard bottle over, but it stopped right before the bottle due to poor trajectory planning. In `finetune_results/move_box_left_fail_2.mp4` the robot tried to pick up the box, then move it left, just as instructed, and place it down; the only issue with the run was that it missed the box initially. These failures show that the model has gained understanding from the fine-tuning on how to control the robot and plan trajectories. The base Mistral-7B model produced many more errors and was not able to plan and execute almost any trajectories, and even it did, they were incoherent.
+
+![Failure to move the box to the left](https://github.com/johanndiep/language-models-trajectory-generators/blob/main_mistral/finetune_results/move_box_left_fail_2.gif)
+
 
 #### Performance
 
@@ -200,7 +203,7 @@ The work presented is a testament that small LLMs can be trained on complex task
 Small LLMs can be put on edge devises and robots directly, eliminating the latency of devices talking to servers, and greatly decreasing costs for running large, computationally heavy, slow at inference LLMs.
 
 ## Authors
-- [Stefan Karmakov](https://www.linkedin.com/in/stefankarmakov/) () 
+- [Stefan Karmakov](https://www.linkedin.com/in/stefankarmakov/) (karmakovst@gmail.com) 
 - [Johann Diep](https://www.linkedin.com/in/johann-diep/) (johanndiep@gmail.com)
 
 Special thanks go to [John Kwon](https://www.linkedin.com/in/john-teyun-kwon/), the author of the original repository and the paper ["Language Models as Zero-Shot Trajectory Generators"](https://arxiv.org/abs/2310.11604), for providing the dataset and sharing his insights.
