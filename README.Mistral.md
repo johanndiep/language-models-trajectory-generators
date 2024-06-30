@@ -18,7 +18,7 @@ Enter a command:
 ## Fine-tuning Improvements
 
 ### Dataset Generation
-The dataset was provided to us by the first author of the original repo and paper (John Kwon, https://www.linkedin.com/in/john-teyun-kwon/). The dataset consisted of 130 examples from testing the original codebase, utilising GPT models as the LLMs. Each entry of the dataset was a raw terminal output from the simulator run, similar to what a user would get if they run the system themselves and collect the terminal outputs. In the dataset, each entry was a run with a different command; there were a total of 35 unique commands, each repeated several times. Examples of similar commands can be found in the `/outputs` folder in the original repo. 
+The dataset was provided to us by the first author of the original repo and paper ([John Kwon](https://www.linkedin.com/in/john-teyun-kwon/)). The dataset consisted of 130 examples from testing the original codebase, utilising GPT models as the LLMs. Each entry of the dataset was a raw terminal output from the simulator run, similar to what a user would get if they run the system themselves and collect the terminal outputs. In the dataset, each entry was a run with a different command; there were a total of 35 unique commands, each repeated several times. Examples of similar commands can be found in the `/outputs` folder in the original repo. 
 
 The raw data had to be cleaned and formatted into the standard for Mistral datasets to allow for fine-tuning. The structure used is the same as the default instruct data structure outlined in https://docs.mistral.ai/capabilities/finetuning/#1-default-instruct. The script `create_finetune_dataset.py` was written to process the data into that structure. The inputs are the raw dataset folder path `--data_path` and the name of the terminal output text files `--data_file_name` (the file for each run was named the same, only the sub-folder paths differed). The script would then find all dataset files with that name and:
 1. Do pre- and post-cleaning of the string, removing terminal output artifacts, irrelevant to the data.
@@ -50,9 +50,9 @@ This indicates that the model's understanding of the task/command is poor. More 
 
 ##### Failed Example:
 
-Command: "move box left"
+Command: `move box left`
 
-Terminal Output (terminal artifacts removed for ease of reading):
+Terminal output (terminal artifacts removed for ease of reading):
 ```
 ...
 user:
@@ -171,7 +171,7 @@ Sometimes the model tried to fulfill the task, but was not successful, yet close
 
 #### Performance
 
-To measure the performance of the base model and the fine-tuned model, we tested with 4 different commands, to test the ability of the model to deal with singular objects. The reasoning was that if the model is able to handle single objects, the testing would move to multiple objects. Each command was tested 5 times on each model, for consistency, with the `bottle` and `box` items referring to `mustard bottle` and `cracker box`. The results are presented in the table below:
+To measure the performance of the base model and the fine-tuned model, we tested with 3 different commands, to test the ability of the model to deal with singular objects. The reasoning was that if the model is able to handle single objects, the testing would move to multiple objects. Each command was tested 5 times on each model, for consistency, with the `bottle` and `box` items referring to `mustard bottle` and `cracker box`. The results are presented in the table below:
 
 
 <center>Table: Model success rate (in %) on user commands
@@ -181,7 +181,6 @@ To measure the performance of the base model and the fine-tuned model, we tested
 | move box left      | 0%   | 0%  |
 | pick up bottle     | 0%   | 60%   |
 | knock over bottle  | 0%   | 20%   |
-|   |    |      |
 
 </center>
 
@@ -190,8 +189,16 @@ The fine-tuned model has shown great improvement on all tasks. Even on the `move
 - the low fine-tune training time (5 epochs)
 - the size of the model (the model is 7B parameters, much smaller than all the GPT models that were used for the original `language-models-trajectory-generators` repo)
 
-The work we present is a testament that small LLMs can be trained on complex tasks, such as controlling robot motion, and with few examples to learn from, drastically improve their performance. Further work is required to build on top of this, increasing the data size and training, but this beginning shows how promising LLMs are for robot control, making the task of robot control much simpler for users. 
+## Conclusion
 
-Small LLMs can be put on edge devises and robots directly, eliminating the latency of devices talking to servers, and greatly decreasing costs for running large, computationally heavy, slow at inference LLMs.  
+The work presented is a testament that small LLMs can be trained on complex tasks, such as controlling robot motion, and with few examples to learn from, drastically improve their performance. Further work is required to build on top of this, increasing the data size and training, but this beginning shows how promising LLMs are for robot control, making the task of robot control much simpler for users. 
+
+Small LLMs can be put on edge devises and robots directly, eliminating the latency of devices talking to servers, and greatly decreasing costs for running large, computationally heavy, slow at inference LLMs.
+
+## Authors
+- [Stefan Karmakov](https://www.linkedin.com/in/stefankarmakov/) () 
+- [Johann Diep](https://www.linkedin.com/in/johann-diep/) (johanndiep@gmail.com)
+
+Special thanks go to [John Kwon](https://www.linkedin.com/in/john-teyun-kwon/), the author of the original repository and the paper ["Language Models as Zero-Shot Trajectory Generators"](https://arxiv.org/abs/2310.11604), for providing the dataset and sharing his insights.
 
 
