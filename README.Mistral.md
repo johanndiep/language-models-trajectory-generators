@@ -34,7 +34,7 @@ The raw data had to be cleaned and formatted into the standard for Mistral datas
 2. Find the `user`, `assistant` and `system` speakers in the data and extract their messages/prompts.
 3. Organise the data in the right format for the Mistral fine-tuning, such as ensuring only one "system" prompt is present.
 
-The end result was two JSONL files, train (124 example conversations) and validate (6 example conversations), that were used to fine-tune a mistral-7B model. At the request of the first author, the original and processed dataset has not been made publicly available in this forked repository. 
+The end result was two JSONL files, train (124 example conversations) and validate (6 example conversations), that were used to fine-tune a mistral-7B model.
 
 ### Fine-tuning Results
 
