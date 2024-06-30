@@ -46,6 +46,8 @@ The fine-tuning was done in accordance with the instructions on creating a fine-
 
 The non-finetuned model was not able to perform the commands specified to it, even after the aforementioned prompt engineering. Rarely (~10% of the time), the model would be able to execute a trajectory, but that trajectory would be very wrong (see `finetune_results/pick_up_bottle.mp4` for a video example of this). 
 
+![Failure to pick up the bottle](https://github.com/johanndiep/language-models-trajectory-generators/blob/main_mistral/nonfinetune_results/pick_up_bottle.gif)
+
 This indicates that the model's understanding of the task/command is poor. More often, the model would get stuck outputting wrong function calls, not recognising the errors that it has made in the previous output and thus not correcting the new outputs. This also applied when Mistral's specialized coding model (`codestral-latest`) was used instead. An example below (the pasted raw terminal output from a run) shows how the model is unable to progress with the simulation, as it is not able to produce no-error trajectory plans.
 
 ##### Failed Example:
