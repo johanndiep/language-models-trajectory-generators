@@ -10,7 +10,7 @@ This work is based on the publication ["Language Models as Zero-Shot Trajectory 
 
 ## Starting the Simulator with Mistral
 
-Setting up the environment and running the script is almost the same as in the original repo (please refer to README.md file for more information on how to set up the requirements and file structure), but two more parameters are required to run the Mistral fine-tuned model:
+Setting up the environment and running the script is almost the same as in the original repo (please refer to [README.md](https://github.com/johanndiep/language-models-trajectory-generators/blob/main_mistral/README.md) file for more information on how to set up the requirements and file structure), but two more parameters are required to run the Mistral fine-tuned model:
 - for `--language_model` you need to specify the mistral fine-tuning model ID (ex: "ft:open-mistral-7b:daf5e488:20240430:c1bed559"). The code has been modified to detect whether the inputted language model is a GPT or a Mistral model and executes the needed functions.
 - a new flag is added `--token` that passes the Mistral API key to the function that calls the fine-tuning API. This argument is also required, otherwise the system throws a permission error.
 
