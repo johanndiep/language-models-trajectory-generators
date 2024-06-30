@@ -15,40 +15,42 @@ The other available arguments from the original repo still work, if required by 
 Enter a command:
 ```
 
-## Fine-tuning improvements
+## Fine-tuning Improvements
 
 ### Dataset Generation
-The dataset was provided to us by the first author of the original repo and paper (John Kwon (https://www.linkedin.com/in/john-teyun-kwon/)). The dataset consisted of 130 examples from testing the original codebase, utilising GPT models as the LLMs. Each entry of the dataset was a raw terminal output from the simulator run, similar to what a user would get if they run the system themselves and collect the terminal outputs. In the dataset, each entry was a run with a different command; there were a total of 35 unique commands, each repeated several times. Examples of similar commands can be found in the `/outputs` folder in the original repo.
+The dataset was provided to us by the first author of the original repo and paper (John Kwon, https://www.linkedin.com/in/john-teyun-kwon/). The dataset consisted of 130 examples from testing the original codebase, utilising GPT models as the LLMs. Each entry of the dataset was a raw terminal output from the simulator run, similar to what a user would get if they run the system themselves and collect the terminal outputs. In the dataset, each entry was a run with a different command; there were a total of 35 unique commands, each repeated several times. Examples of similar commands can be found in the `/outputs` folder in the original repo. 
 
-The raw data had to be cleaned and formatted into the standard for Mistral datasets to allow for fine-tuning. The structure used is the same as the default instruc data structure outlined in https://docs.mistral.ai/capabilities/finetuning/#1-default-instruct. The script `create_finetune_dataset.py` was written to process the data into that structure. The inputs are the raw dataset folder path `--data_path` and the name of the terminal output text files `--data_file_name` (the file for each run was named the same, only the sub-folder paths differed). The script would then find all dataset files with that name and:
-1. Do pre and post cleaning of the string, removing terminal output artifacts, irrelevant to the data
-2. Find the `user`, `assistant` and `system` speakers in the data and extract their messages/prompts
-3. Organise the data in the right format for the Mistral fine-tuning, such as ensuring only one "system" prompt is present
+The raw data had to be cleaned and formatted into the standard for Mistral datasets to allow for fine-tuning. The structure used is the same as the default instruct data structure outlined in https://docs.mistral.ai/capabilities/finetuning/#1-default-instruct. The script `create_finetune_dataset.py` was written to process the data into that structure. The inputs are the raw dataset folder path `--data_path` and the name of the terminal output text files `--data_file_name` (the file for each run was named the same, only the sub-folder paths differed). The script would then find all dataset files with that name and:
+1. Do pre- and post-cleaning of the string, removing terminal output artifacts, irrelevant to the data.
+2. Find the `user`, `assistant` and `system` speakers in the data and extract their messages/prompts.
+3. Organise the data in the right format for the Mistral fine-tuning, such as ensuring only one "system" prompt is present.
 
-The end result was two JSONL files, train (124 example conversations) and validate (6 example conversations), that were used to fine-tune a mistral-7B model. 
+The end result was two JSONL files, train (124 example conversations) and validate (6 example conversations), that were used to fine-tune a mistral-7B model. At the request of the first author, the original and processed dataset has not been made publicly available in this forked repository. 
 
 ### Fine-tuning Results
 
-Before the fine-tuning step, the simulation was executed with a base Mistral-7B model to test its performance. The model was reluctant to follow well the prompts, especially not adhering to the prompts to stop generating code after some point. To combat this, prompt engineering was used to make the model produce outputs more aligned with the expectations for the task. The prompt snippet that worked best is shown below. It was included in the `prompts/main_prompt.py` and was part of all the testing of all models (fine-tuned and non-finetuned).
+Before the fine-tuning step, the simulation was executed with a base Mistral-7B model (`open-mistral-7b`) to test its performance. The model was reluctant to follow well the prompts, especially not adhering to the prompts to stop generating code after some point.
+
+To combat this, prompt engineering was used to make the model produce outputs more aligned with the expectations for the task. The prompt snippet that worked best is shown below. It was included in the `prompts/main_prompt.py` and was part of all the testing of all models (fine-tuned and non-finetuned).
 ```
 *** Important for you to follow ***
 Stop generation after each python code block to wait for it to finish executing before continuing with your plan.
 Explicitly say "Stopping Generation" after the generated code block and then stop!
 ```
 
-The original `language-models-trajectory-generators` repository code was changed to allow for the LLM in the system to be swapped to a user-specified Mistral fine-tuning model (see section `Starting the Simulator with Mistral` above). The main function for this is `get_mistral_output` in `models.py`. The function uses `requests` to call the Mistral API, as this was found to be easier to work with because the input messages are in the right format (list of dicts) for the curl commands, but would need to be amended to ChatMessage for the python SDK.
+The original `language-models-trajectory-generators` repository code was changed to allow for the LLM in the system to be swapped to a user-specified Mistral fine-tuning model (see section `Starting the Simulator with Mistral` above). The main function for this is `get_mistral_output` in `models.py`. The function uses `requests` to call the Mistral API, as this was found to be easier to work with because the input messages are in the right format (list of dicts) for the curl commands, but would need to be amended to `ChatMessage` for the Python SDK.
 
-The fine-tuning was done in accordance with the isntructions on creating a fine-tuning job from the Mistral website (https://docs.mistral.ai/capabilities/finetuning/#create-a-fine-tuning-job). Some results are presented below:
+The fine-tuning was done in accordance with the instructions on creating a fine-tuning job from the Mistral website (https://docs.mistral.ai/capabilities/finetuning/#create-a-fine-tuning-job). Some results are presented below:
 
 #### Base Mistral-7B
 
 The non-finetuned model was not able to perform the commands specified to it, even after the aforementioned prompt engineering. Rarely (~10% of the time), the model would be able to execute a trajectroy, but that trajectory would be very wrong (see `finetune_results/knock_over_bottle.mp4` for a video example of this). 
 
-This indicates that the model's understanding of the task/command is poor. More often, the model would get stuck outputting wrong function calls, not recognising the errors that it has made in the previous output and thus not correcting the new outputs. AN example below (the pasted raw terminal output from a run) shows how the model is unable to progress with the simulation, as it is not able to produce no-error trajectory plans.
+This indicates that the model's understanding of the task/command is poor. More often, the model would get stuck outputting wrong function calls, not recognising the errors that it has made in the previous output and thus not correcting the new outputs. This also applied when Mistral's specialized coding model (`codestral-latest`) was used instead. An example below (the pasted raw terminal output from a run) shows how the model is unable to progress with the simulation, as it is not able to produce no-error trajectory plans.
 
-Failed Example:
+##### Failed Example:
 
-Command: move box left
+Command: "move box left"
 
 Terminal Output (terminal artifacts removed for ease of reading):
 ```
