@@ -10,7 +10,7 @@ This work is based on the publication ["Language Models as Zero-Shot Trajectory 
 
 ## Starting the Simulator with Mistral
 
-This repository is a fork of the [original repository by John Kwon](https://github.com/kwonathan/language-models-trajectory-generators). Setting up the environment and running the script is almost the same as in the original (please refer to [README.md](https://github.com/johanndiep/language-models-trajectory-generators/blob/main_mistral/README.md) file for more information on how to set up the requirements and file structure), but two more parameters are required to run the Mistral fine-tuned model:
+This repository is a fork of the [original repository by Teyun Kwon](https://github.com/kwonathan/language-models-trajectory-generators). Setting up the environment and running the script is almost the same as in the original (please refer to [README.md](https://github.com/johanndiep/language-models-trajectory-generators/blob/main_mistral/README.md) file for more information on how to set up the requirements and file structure), but two more parameters are required to run the Mistral fine-tuned model:
 - for `--language_model` you need to specify the mistral fine-tuning model ID (ex: "ft:open-mistral-7b:daf5e488:20240430:c1bed559"). The code has been modified to detect whether the inputted language model is a GPT or a Mistral model and executes the needed functions.
 - a new flag is added `--token` that passes the Mistral API key to the function that calls the fine-tuning API. This argument is also required, otherwise the system throws a permission error.
 
@@ -27,7 +27,7 @@ Enter a command:
 ## Fine-tuning Improvements
 
 ### Dataset Generation
-The dataset was provided to us by the first author of the original repo and paper ([John Kwon](https://www.linkedin.com/in/john-teyun-kwon/)). The dataset consisted of 130 examples from testing the original codebase, utilising GPT models as the LLMs. Each entry of the dataset was a raw terminal output from the simulator run, similar to what a user would get if they run the system themselves and collect the terminal outputs. In the dataset, each entry was a run with a different command; there were a total of 35 unique commands, each repeated several times. Examples of similar commands can be found in the `/outputs` folder in the original repo. 
+The dataset was provided to us by the first author of the original repo and paper ([Teyun Kwon](https://www.linkedin.com/in/john-teyun-kwon/)). The dataset consisted of 130 examples from testing the original codebase, utilising GPT models as the LLMs. Each entry of the dataset was a raw terminal output from the simulator run, similar to what a user would get if they run the system themselves and collect the terminal outputs. In the dataset, each entry was a run with a different command; there were a total of 35 unique commands, each repeated several times. Examples of similar commands can be found in the `/outputs` folder in the original repo. 
 
 The raw data had to be cleaned and formatted into the standard for Mistral datasets to allow for fine-tuning. The structure used is the same as the default instruct data structure outlined in https://docs.mistral.ai/capabilities/finetuning/#1-default-instruct. The script `create_finetune_dataset.py` was written to process the data into that structure. The inputs are the raw dataset folder path `--data_path` and the name of the terminal output text files `--data_file_name` (the file for each run was named the same, only the sub-folder paths differed). The script would then find all dataset files with that name and:
 1. Do pre- and post-cleaning of the string, removing terminal output artifacts, irrelevant to the data.
@@ -215,6 +215,6 @@ Small LLMs can be put on edge devises and robots directly, eliminating the laten
 - [Stefan Karmakov](https://www.linkedin.com/in/stefankarmakov/) (karmakovst@gmail.com) 
 - [Johann Diep](https://www.linkedin.com/in/johann-diep/) (johanndiep@gmail.com)
 
-Special thanks go to [John Kwon](https://www.linkedin.com/in/john-teyun-kwon/), the author of the original repository and the paper ["Language Models as Zero-Shot Trajectory Generators"](https://arxiv.org/abs/2310.11604), for providing the dataset and sharing his insights.
+Special thanks go to [Teyun Kwon](https://www.linkedin.com/in/john-teyun-kwon/), the author of the original repository and the paper ["Language Models as Zero-Shot Trajectory Generators"](https://arxiv.org/abs/2310.11604), for providing the dataset and sharing his insights.
 
 
