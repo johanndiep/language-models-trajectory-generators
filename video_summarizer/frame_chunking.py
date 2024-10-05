@@ -1,10 +1,6 @@
 import cv2
 import os
-from PIL import Image
-import torch
-from semantic_router.encoders import VitEncoder
-from semantic_chunkers import ConsecutiveChunker
-import matplotlib.pyplot as plt
+
 
 class FrameChunker:
     """
@@ -59,108 +55,10 @@ class FrameChunker:
 
         return frames
 
-    def semantic_segmentation_VitEncoder(self):
-        """
-        Perform semantic segmentation on the video frames to identify objects and their
-        locations in the video.
-        """
-        vidcap = cv2.VideoCapture(self.video_path)
-
-        frames = []
-        success, image = vidcap.read()
-        while success:
-            frames.append(image)
-            success, image = vidcap.read()
-        length = len(frames)
-        print(f"Total frames using VitEncoder: {length}")
-
-        image_frames = list(map(Image.fromarray, frames))
-        
-        device = (
-            "mps"
-            if torch.backends.mps.is_available()
-            else "cuda" if torch.cuda.is_available() else "cpu"
-        )
-        print(f"in VitEncoder device: {device}")
-
-        encoder = VitEncoder(device=device)
-
-        chunker = ConsecutiveChunker(encoder=encoder, score_threshold=0.8)
-
-        chunks = chunker(docs=[image_frames])
-        print(f"in VitEncoder chunks identified: {len(chunks)}")
-
-        f, axarr = plt.subplots(len(chunks[0]), 3, figsize=(20, 5))
-        
-        for i, chunk in enumerate(chunks[0]):
-            axarr[i, 0].imshow(chunk.splits[0])
-            num_docs = len(chunk.splits)
-            mid = num_docs // 2
-            axarr[i, 1].imshow(chunk.splits[mid])
-            axarr[i, 2].imshow(chunk.splits[num_docs - 1])
-
-        # saving chunks as frames in frames folder
-        for i, chunk in enumerate(chunks[0]):
-            for j, doc in enumerate(chunk.splits):
-                frame_file = os.path.join(self.frames_dir, f"frame_{i}_{j}.jpg")
-                doc.save(frame_file)
-
-        return chunks
-    
-    def consecutive_chunker(self):
-        """
-        Perform semantic segmentation on the video frames to identify objects and their
-        locations in the video.
-        """
-        vidcap = cv2.VideoCapture(self.video_path)
-
-        frames = []
-        success, image = vidcap.read()
-        while success:
-            frames.append(image)
-            success, image = vidcap.read()
-        length = len(frames)
-        print(f"Total frames using VitEncoder: {length}")
-
-        image_frames = list(map(Image.fromarray, frames))
-
-        # Initialize the encoder
-        device = (
-            "mps"
-            if torch.backends.mps.is_available()
-            else "cuda" if torch.cuda.is_available() else "cpu"
-        )
-        print(f"Using '{device}'")
-
-        encoder = VitEncoder(device=device)
-
-        chunker = ConsecutiveChunker(encoder=encoder, score_threshold=0.912)
-
-        chunks = chunker(docs=[image_frames])
-
-        f, axarr = plt.subplots(len(chunks[0]), 3, figsize=(20, 5))
-        
-        for i, chunk in enumerate(chunks[0]):
-            axarr[i, 0].imshow(chunk.splits[0])
-            num_docs = len(chunk.splits)
-            mid = num_docs // 2
-            axarr[i, 1].imshow(chunk.splits[mid])
-            axarr[i, 2].imshow(chunk.splits[num_docs - 1])
-
-        # saving chunks as frames in frames folder
-        for i, chunk in enumerate(chunks[0]):
-            for j, doc in enumerate(chunk.splits):
-                frame_file = os.path.join(self.frames_dir, f"frame_{i}_{j}.jpg")
-                doc.save(frame_file)
-
-        return chunks
-
 
 if __name__ == "__main__":
     video_path = "video.mp4"
 
     video_processor = FrameChunker(video_path)
 
-    # key_frames = video_processor.extract_key_frames(interval=1)
-    # key_frames = video_processor.semantic_segmentation_VitEncoder()
-    key_frames = video_processor.consecutive_chunker()
+    key_frames = video_processor.extract_key_frames(interval=1)
