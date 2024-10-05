@@ -5,9 +5,12 @@ from mistralai import Mistral
 
 
 class ImageAnalyzer:
-    def __init__(self, frames_directory: str, model: str, api_key: str):
+    def __init__(
+        self, frames_directory: str, vision_model: str, lang_model: str, api_key: str
+    ):
         self.frames_directory = frames_directory
-        self.model = model
+        self.vision_model = vision_model
+        self.lang_model = lang_model
         self.client = Mistral(api_key=api_key)
 
     def encode_image(self, image_path: str) -> str:
@@ -61,14 +64,15 @@ class ImageAnalyzer:
 
         messages = [{"role": "user", "content": [content] + image_messages}]
 
-        chat_response = self.client.chat.complete(model=self.model, messages=messages)
+        chat_response = self.client.chat.complete(
+            model=self.vision_model, messages=messages
+        )
         return chat_response.choices[0].message.content
 
     def caption_difference(self, previous_difference, sequential_image_messages):
-
         content = {
             "type": "text",
-            "text": f"This happened previously:\nprevious_difference\nDescribe the task happening between these two frames in one sentence.",
+            "text": f"This happened previously:\n{previous_difference}\nDescribe the task happening between these two frames in one sentence.",
         }
 
         messages = [
@@ -78,7 +82,22 @@ class ImageAnalyzer:
             }
         ]
 
-        chat_response = self.client.chat.complete(model=self.model, messages=messages)
+        chat_response = self.client.chat.complete(
+            model=self.vision_model, messages=messages
+        )
+        return chat_response.choices[0].message.content
+
+    def generate_final_summary(self, combined_captions):
+        messages = [
+            {
+                "role": "user",
+                "content": "Summarize this in one sentence:\n" + combined_captions,
+            }
+        ]
+
+        chat_response = self.client.chat.complete(
+            model=self.lang_model, messages=messages
+        )
         return chat_response.choices[0].message.content
 
 
@@ -87,13 +106,14 @@ if __name__ == "__main__":
     api_key = os.environ["MISTRAL_API_KEY"]
 
     frames_directory = "frames"
-    model = "pixtral-12b-2409"
+    vision_model = "pixtral-12b-2409"
+    lang_model = "mistral-large-latest"
 
     caption_list = []
 
-    analyzer = ImageAnalyzer(frames_directory, model, api_key)
+    analyzer = ImageAnalyzer(frames_directory, vision_model, lang_model, api_key)
     grounding = analyzer.caption_first_frame()
-    caption_list.append(grounding)
+    caption_list.append("This is the start of the video: " + grounding)
 
     frame_list = analyzer.collect_images()
 
@@ -105,4 +125,12 @@ if __name__ == "__main__":
 
         if len(consecutive_frames) == 2:
             difference = analyzer.caption_difference(difference, consecutive_frames)
-            caption_list.append(difference)
+            caption_list.append(
+                "This is happening between two consecutive frames: " + difference
+            )
+
+    combined_captions = "\n\n".join(caption_list)
+
+    summary = analyzer.generate_final_summary(combined_captions)
+
+    print(summary)
