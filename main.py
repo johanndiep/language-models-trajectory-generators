@@ -24,6 +24,8 @@ from prompts.task_failure_prompt import TASK_FAILURE_PROMPT
 from prompts.task_summary_prompt import TASK_SUMMARY_PROMPT
 from config import OK, PROGRESS, FAIL, ENDC
 
+from video_summarizer.utils import read_string_from_csv
+
 sys.path.append("./XMem/")
 print = functools.partial(print, flush=True)
 
@@ -35,9 +37,27 @@ if __name__ == "__main__":
 
     # Parse args
     parser = argparse.ArgumentParser(description="Main Program.")
-    parser.add_argument("-lm", "--language_model", choices=["gpt-4", "gpt-4-32k", "gpt-3.5-turbo", "gpt-3.5-turbo-16k"], default="gpt-4", help="select language model")
-    parser.add_argument("-r", "--robot", choices=["sawyer", "franka"], default="sawyer", help="select robot")
-    parser.add_argument("-m", "--mode", choices=["default", "debug"], default="default", help="select mode to run")
+    parser.add_argument(
+        "-lm",
+        "--language_model",
+        choices=["gpt-4", "gpt-4-32k", "gpt-3.5-turbo", "gpt-3.5-turbo-16k"],
+        default="gpt-4",
+        help="select language model",
+    )
+    parser.add_argument(
+        "-r",
+        "--robot",
+        choices=["sawyer", "franka"],
+        default="sawyer",
+        help="select robot",
+    )
+    parser.add_argument(
+        "-m",
+        "--mode",
+        choices=["default", "debug"],
+        default="default",
+        help="select mode to run",
+    )
     args = parser.parse_args()
 
     # Logging
@@ -56,7 +76,9 @@ if __name__ == "__main__":
 
     # Load models
     langsam_model = LangSAM()
-    xmem_model = XMem(config.xmem_config, "./XMem/saves/XMem.pth", device).eval().to(device)
+    xmem_model = (
+        XMem(config.xmem_config, "./XMem/saves/XMem.pth", device).eval().to(device)
+    )
 
     # API set-up
     main_connection, env_connection = Pipe()
@@ -69,14 +91,19 @@ if __name__ == "__main__":
     task_completed = api.task_completed
 
     # Start process
-    env_process = Process(target=run_simulation_environment, name="EnvProcess", args=[args, env_connection, logger])
+    env_process = Process(
+        target=run_simulation_environment,
+        name="EnvProcess",
+        args=[args, env_connection, logger],
+    )
     env_process.start()
 
     [env_connection_message] = main_connection.recv()
     logger.info(env_connection_message)
 
     # User input
-    command = input("Enter a command: ")
+    # command = input("Enter a command: ")
+    command = read_string_from_csv("video_summarizer/frames/plate/robot_command.csv")
     api.command = command
 
     # ChatGPT
@@ -86,10 +113,14 @@ if __name__ == "__main__":
 
     error = False
 
-    new_prompt = MAIN_PROMPT.replace("[INSERT EE POSITION]", str(config.ee_start_position)).replace("[INSERT TASK]", command)
+    new_prompt = MAIN_PROMPT.replace(
+        "[INSERT EE POSITION]", str(config.ee_start_position)
+    ).replace("[INSERT TASK]", command)
 
     logger.info(PROGRESS + "Generating ChatGPT output..." + ENDC)
-    messages = models.get_chatgpt_output(args.language_model, new_prompt, messages, "system")
+    messages = models.get_chatgpt_output(
+        args.language_model, new_prompt, messages, "system"
+    )
     logger.info(OK + "Finished generating ChatGPT output!" + ENDC)
 
     while True:
@@ -114,14 +145,18 @@ if __name__ == "__main__":
                                 exec(code)
                         except Exception:
                             error_message = traceback.format_exc()
-                            new_prompt += ERROR_CORRECTION_PROMPT.replace("[INSERT BLOCK NUMBER]", str(block_number)).replace("[INSERT ERROR MESSAGE]", error_message)
+                            new_prompt += ERROR_CORRECTION_PROMPT.replace(
+                                "[INSERT BLOCK NUMBER]", str(block_number)
+                            ).replace("[INSERT ERROR MESSAGE]", error_message)
                             new_prompt += "\n"
                             error = True
                         else:
                             s = f.getvalue()
                             error = False
                             if s != "" and len(s) < 2000:
-                                new_prompt += PRINT_OUTPUT_PROMPT.replace("[INSERT PRINT STATEMENT OUTPUT]", s)
+                                new_prompt += PRINT_OUTPUT_PROMPT.replace(
+                                    "[INSERT PRINT STATEMENT OUTPUT]", s
+                                )
                                 new_prompt += "\n"
                                 error = True
 
@@ -134,27 +169,39 @@ if __name__ == "__main__":
 
                 if api.failed_task:
 
-                    logger.info(FAIL + "FAILED TASK! Generating summary of the task execution attempt..." + ENDC)
+                    logger.info(
+                        FAIL
+                        + "FAILED TASK! Generating summary of the task execution attempt..."
+                        + ENDC
+                    )
 
                     new_prompt += TASK_SUMMARY_PROMPT
                     new_prompt += "\n"
 
                     logger.info(PROGRESS + "Generating ChatGPT output..." + ENDC)
-                    messages = models.get_chatgpt_output(args.language_model, new_prompt, messages, "user")
+                    messages = models.get_chatgpt_output(
+                        args.language_model, new_prompt, messages, "user"
+                    )
                     logger.info(OK + "Finished generating ChatGPT output!" + ENDC)
 
                     logger.info(PROGRESS + "RETRYING TASK..." + ENDC)
 
-                    new_prompt = MAIN_PROMPT.replace("[INSERT EE POSITION]", str(config.ee_start_position)).replace("[INSERT TASK]", command)
+                    new_prompt = MAIN_PROMPT.replace(
+                        "[INSERT EE POSITION]", str(config.ee_start_position)
+                    ).replace("[INSERT TASK]", command)
                     new_prompt += "\n"
-                    new_prompt += TASK_FAILURE_PROMPT.replace("[INSERT TASK SUMMARY]", messages[-1]["content"])
+                    new_prompt += TASK_FAILURE_PROMPT.replace(
+                        "[INSERT TASK SUMMARY]", messages[-1]["content"]
+                    )
 
                     messages = []
 
                     error = False
 
                     logger.info(PROGRESS + "Generating ChatGPT output..." + ENDC)
-                    messages = models.get_chatgpt_output(args.language_model, new_prompt, messages, "system")
+                    messages = models.get_chatgpt_output(
+                        args.language_model, new_prompt, messages, "system"
+                    )
                     logger.info(OK + "Finished generating ChatGPT output!" + ENDC)
 
                     api.failed_task = False
@@ -162,7 +209,9 @@ if __name__ == "__main__":
                 else:
 
                     logger.info(PROGRESS + "Generating ChatGPT output..." + ENDC)
-                    messages = models.get_chatgpt_output(args.language_model, new_prompt, messages, "user")
+                    messages = models.get_chatgpt_output(
+                        args.language_model, new_prompt, messages, "user"
+                    )
                     logger.info(OK + "Finished generating ChatGPT output!" + ENDC)
 
         logger.info(OK + "FINISHED TASK!" + ENDC)
@@ -170,7 +219,9 @@ if __name__ == "__main__":
         new_prompt = input("Enter a command: ")
 
         logger.info(PROGRESS + "Generating ChatGPT output..." + ENDC)
-        messages = models.get_chatgpt_output(args.language_model, new_prompt, messages, "user")
+        messages = models.get_chatgpt_output(
+            args.language_model, new_prompt, messages, "user"
+        )
         logger.info(OK + "Finished generating ChatGPT output!" + ENDC)
 
         api.completed_task = False
