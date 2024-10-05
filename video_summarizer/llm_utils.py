@@ -34,15 +34,51 @@ class ImageAnalyzer:
                     )
         return image_messages
 
-    def analyze_images(self):
-        image_messages = self.collect_images()
+    def collect_first_image(self):
+        jpg_files = sorted(
+            [f for f in os.listdir(self.frames_directory) if f.endswith(".jpg")]
+        )
+
+        if jpg_files:
+            image_path = os.path.join(self.frames_directory, jpg_files[0])
+            base64_image = self.encode_image(image_path)
+            if base64_image:
+                return [
+                    {
+                        "type": "image_url",
+                        "image_url": f"data:image/jpeg;base64,{base64_image}",
+                    }
+                ]
+        return None
+
+    def caption_first_frame(self):
+        image_messages = self.collect_first_image()
 
         content = {
             "type": "text",
-            "text": "In the following sequential video frames, you see a human doing a task. Describe the task the human is doing as detailed as possible in one sentence.",
+            "text": "Describe what you can see in this image in one sentence.",
         }
 
         messages = [{"role": "user", "content": [content] + image_messages}]
+
+        chat_response = self.client.chat.complete(model=self.model, messages=messages)
+        return chat_response.choices[0].message.content
+
+    def caption_difference(self, sequential_image_messages):
+
+        content = {
+            "type": "text",
+            "text": f"Describe the change between these two frames in one sentence.",
+        }
+
+        messages = [
+            {
+                "role": "user",
+                "content": [sequential_image_messages[0]]
+                + [content]
+                + [sequential_image_messages[1]],
+            }
+        ]
 
         chat_response = self.client.chat.complete(model=self.model, messages=messages)
         return chat_response.choices[0].message.content
@@ -55,7 +91,19 @@ if __name__ == "__main__":
     frames_directory = "frames"
     model = "pixtral-12b-2409"
 
-    analyzer = ImageAnalyzer(frames_directory, model, api_key)
-    response = analyzer.analyze_images()
+    caption_list = []
 
-    print(response)
+    analyzer = ImageAnalyzer(frames_directory, model, api_key)
+    grounding = analyzer.caption_first_frame()
+    caption_list.append(grounding)
+
+    frame_list = analyzer.collect_images()
+
+    for i in range(len(frame_list) - 1):
+        consecutive_frames = frame_list[i : i + 2]
+
+        if len(consecutive_frames) == 2:
+            difference = analyzer.caption_difference(consecutive_frames)
+            caption_list.append(difference)
+
+    print(caption_list)
