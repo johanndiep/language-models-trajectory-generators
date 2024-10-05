@@ -4,3 +4,4 @@ images/
 0_VRDemoSettings.txt
 .env
 *.jpg
+robot_command.csv
