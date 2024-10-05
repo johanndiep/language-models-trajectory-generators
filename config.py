@@ -41,6 +41,10 @@ object_start_orientation_e_can_2 = [0.0, 0.0, random.uniform(-math.pi, math.pi)]
 object_start_position_can_3 = [random.uniform(-0.2, 0.2), random.uniform(0.4, 0.8), 0.1]
 object_start_orientation_e_can_3 = [0.0, 0.0, random.uniform(-math.pi, math.pi)]
 
+# Plate and can use-case
+object_start_position_plate = [random.uniform(-0.2, 0.2), random.uniform(0.4, 0.8), 0.1]
+object_start_orientation_e_plate = [0.0, 0.0, random.uniform(-math.pi, math.pi)]
+
 global_scaling = 0.08
 
 # Camera

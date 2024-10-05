@@ -22,6 +22,7 @@ class Environment:
     def __init__(self, args):
 
         self.mode = args.mode
+        self.usecase = "plate"  # "plate"
 
     def load(self):
 
@@ -32,40 +33,66 @@ class Environment:
             config.camera_target_position,
         )
 
-        # Cola can use-case
-        object_start_position_can_1 = config.object_start_position_can_1
-        object_start_orientation_q_can_1 = p.getQuaternionFromEuler(
-            config.object_start_orientation_e_can_1
-        )
-        object_model = p.loadURDF(
-            "ycb_assets/002_master_chef_can.urdf",
-            object_start_position_can_1,
-            object_start_orientation_q_can_1,
-            useFixedBase=False,
-            globalScaling=config.global_scaling,
-        )
-        object_start_position_can_2 = config.object_start_position_can_2
-        object_start_orientation_q_can_2 = p.getQuaternionFromEuler(
-            config.object_start_orientation_e_can_2
-        )
-        object_model = p.loadURDF(
-            "ycb_assets/002_master_chef_can.urdf",
-            object_start_position_can_2,
-            object_start_orientation_q_can_2,
-            useFixedBase=False,
-            globalScaling=config.global_scaling,
-        )
-        object_start_position_can_3 = config.object_start_position_can_3
-        object_start_orientation_q_can_3 = p.getQuaternionFromEuler(
-            config.object_start_orientation_e_can_3
-        )
-        object_model = p.loadURDF(
-            "ycb_assets/002_master_chef_can.urdf",
-            object_start_position_can_3,
-            object_start_orientation_q_can_3,
-            useFixedBase=False,
-            globalScaling=config.global_scaling,
-        )
+        if self.usecase == "can_tower":
+            # Cola can use-case
+            object_start_position_can_1 = config.object_start_position_can_1
+            object_start_orientation_q_can_1 = p.getQuaternionFromEuler(
+                config.object_start_orientation_e_can_1
+            )
+            object_model = p.loadURDF(
+                "ycb_assets/002_master_chef_can.urdf",
+                object_start_position_can_1,
+                object_start_orientation_q_can_1,
+                useFixedBase=False,
+                globalScaling=config.global_scaling,
+            )
+            object_start_position_can_2 = config.object_start_position_can_2
+            object_start_orientation_q_can_2 = p.getQuaternionFromEuler(
+                config.object_start_orientation_e_can_2
+            )
+            object_model = p.loadURDF(
+                "ycb_assets/002_master_chef_can.urdf",
+                object_start_position_can_2,
+                object_start_orientation_q_can_2,
+                useFixedBase=False,
+                globalScaling=config.global_scaling,
+            )
+            object_start_position_can_3 = config.object_start_position_can_3
+            object_start_orientation_q_can_3 = p.getQuaternionFromEuler(
+                config.object_start_orientation_e_can_3
+            )
+            object_model = p.loadURDF(
+                "ycb_assets/002_master_chef_can.urdf",
+                object_start_position_can_3,
+                object_start_orientation_q_can_3,
+                useFixedBase=False,
+                globalScaling=config.global_scaling,
+            )
+
+        if self.usecase == "plate":
+            # Plate and apple use-case
+            object_start_position_can_1 = config.object_start_position_can_1
+            object_start_orientation_q_can_1 = p.getQuaternionFromEuler(
+                config.object_start_orientation_e_can_1
+            )
+            object_model = p.loadURDF(
+                "ycb_assets/002_master_chef_can.urdf",
+                object_start_position_can_1,
+                object_start_orientation_q_can_1,
+                useFixedBase=False,
+                globalScaling=config.global_scaling,
+            )
+            object_start_position_plate = config.object_start_position_plate
+            object_start_orientation_q_plate = p.getQuaternionFromEuler(
+                config.object_start_orientation_e_plate
+            )
+            object_model = p.loadURDF(
+                "ycb_assets/029_plate.urdf",
+                object_start_position_plate,
+                object_start_orientation_q_plate,
+                useFixedBase=False,
+                globalScaling=config.global_scaling,
+            )
 
         if self.mode == "default":
 
