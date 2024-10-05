@@ -64,19 +64,17 @@ class ImageAnalyzer:
         chat_response = self.client.chat.complete(model=self.model, messages=messages)
         return chat_response.choices[0].message.content
 
-    def caption_difference(self, sequential_image_messages):
+    def caption_difference(self, previous_difference, sequential_image_messages):
 
         content = {
             "type": "text",
-            "text": f"Describe the change between these two frames in one sentence.",
+            "text": f"This happened previously:\nprevious_difference\nDescribe the task happening between these two frames in one sentence.",
         }
 
         messages = [
             {
                 "role": "user",
-                "content": [sequential_image_messages[0]]
-                + [content]
-                + [sequential_image_messages[1]],
+                "content": [content] + sequential_image_messages,
             }
         ]
 
@@ -100,10 +98,11 @@ if __name__ == "__main__":
     frame_list = analyzer.collect_images()
 
     for i in range(len(frame_list) - 1):
+        if i == 0:
+            difference = grounding
+
         consecutive_frames = frame_list[i : i + 2]
 
         if len(consecutive_frames) == 2:
-            difference = analyzer.caption_difference(consecutive_frames)
+            difference = analyzer.caption_difference(difference, consecutive_frames)
             caption_list.append(difference)
-
-    print(caption_list)
