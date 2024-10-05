@@ -186,8 +186,8 @@ if __name__ == "__main__":
     load_dotenv()
     api_key = os.environ["MISTRAL_API_KEY"]
 
-    frames_directory = "frames"
-    command_file = "robot_command.csv"
+    frames_directory = "frames/plate"
+    command_file = "frames/plate/robot_command.csv"
 
     vision_model = "pixtral-12b-2409"
     lang_model = "mistral-large-latest"

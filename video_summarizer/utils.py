@@ -15,7 +15,7 @@ def read_string_from_csv(file_path):
 
 
 if __name__ == "__main__":
-    csv_file_path = "robot_command.csv"
+    csv_file_path = "frames/plate/robot_command.csv"
     string_to_store = "This is a test command."
 
     write_string_to_csv(csv_file_path, string_to_store)
