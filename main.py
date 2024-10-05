@@ -11,10 +11,14 @@ import logging
 import functools
 import models
 import config
-from lang_sam import LangSAM
+import pybullet as p
+import pybullet_data
+import socket
+from time import sleep
 from multiprocessing import Process, Pipe
-from io import StringIO
 from contextlib import redirect_stdout
+from io import StringIO
+from lang_sam import LangSAM
 from api import API
 from env import run_simulation_environment
 from prompts.main_prompt import MAIN_PROMPT
@@ -24,10 +28,85 @@ from prompts.task_failure_prompt import TASK_FAILURE_PROMPT
 from prompts.task_summary_prompt import TASK_SUMMARY_PROMPT
 from config import OK, PROGRESS, FAIL, ENDC
 
+sys.path.append(os.path.join(os.path.dirname(__file__), 'XMem'))
 sys.path.append("./XMem/")
+
 print = functools.partial(print, flush=True)
 
 from XMem.model.network import XMem
+
+
+def pybullet_server(robot, port=6000):
+    # Set up the socket server to listen for incoming connections
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.bind(("0.0.0.0", port))
+    server_socket.listen(1)
+    print(f"PyBullet server started on port {port}")
+
+    # Accept incoming client connections
+    client_socket, addr = server_socket.accept()
+    print(f"Connection established with client at {addr}")
+
+    try:
+        # Initialize PyBullet in DIRECT mode (headless)
+        p.connect(p.DIRECT)
+        p.setAdditionalSearchPath(pybullet_data.getDataPath())
+
+        # Dynamically select the robot model based on the provided argument
+        if robot == "sawyer":
+            model_path = "sawyer_robot/sawyer.urdf"  # Update with the correct path for Sawyer
+            robot_start_position = [0, 0, 1]
+            robot_start_orientation = [0, 0, 0, 1]
+        elif robot == "franka":
+            model_path = "franka_panda/panda.urdf"  # Update with the correct path for Franka
+            robot_start_position = [0, 0, 1]
+            robot_start_orientation = [0, 0, 0, 1]
+        else:
+            raise ValueError(f"Unknown robot type: {robot}")
+
+        # Load the selected robot model and a plane for context
+        planeId = p.loadURDF("plane.urdf")
+        robotId = p.loadURDF(model_path, robot_start_position, robot_start_orientation)
+
+        # Collect model information to send to the client
+        models_info = {
+            "plane": {"path": "plane.urdf", "position": [0, 0, 0], "orientation": [0, 0, 0, 1]},
+            "robot": {"path": model_path, "position": robot_start_position, "orientation": robot_start_orientation}
+        }
+
+        # Send model information to the client before starting the simulation
+        client_socket.sendall(str(models_info).encode())
+        print(f"Model data sent to client: {models_info}")
+
+        # Run the simulation loop and send data to the client
+        while True:
+            # Step the simulation
+            p.stepSimulation()
+            # Get the position and orientation of the robot
+            pos, orn = p.getBasePositionAndOrientation(robotId)
+            # Send the robot's position and orientation as a formatted string to the client
+            message = f"{pos[0]},{pos[1]},{pos[2]},{orn[0]},{orn[1]},{orn[2]},{orn[3]}\n"
+
+            try:
+                client_socket.sendall(message.encode())  # Send data to the client
+            except (BrokenPipeError, ConnectionResetError):
+                print(f"Client at {addr} disconnected. Closing connection.")
+                break  # Exit the loop if the client disconnects unexpectedly
+
+            # Sleep to maintain the desired simulation rate
+            sleep(0.01)
+
+    except Exception as e:
+        print(f"Error in server: {e}")
+
+    finally:
+        # Clean up and close sockets
+        p.disconnect()
+        client_socket.close()
+        server_socket.close()
+        print("Server shut down gracefully.")
+
+
 
 if __name__ == "__main__":
 
@@ -38,6 +117,7 @@ if __name__ == "__main__":
     parser.add_argument("-lm", "--language_model", choices=["gpt-4", "gpt-4-32k", "gpt-3.5-turbo", "gpt-3.5-turbo-16k"], default="gpt-4", help="select language model")
     parser.add_argument("-r", "--robot", choices=["sawyer", "franka"], default="sawyer", help="select robot")
     parser.add_argument("-m", "--mode", choices=["default", "debug"], default="default", help="select mode to run")
+    parser.add_argument("-p", "--port", type=int, default=6000, help="Port to run the server on")
     args = parser.parse_args()
 
     # Logging
@@ -54,6 +134,11 @@ if __name__ == "__main__":
 
     torch.set_grad_enabled(False)
 
+    # Start the PyBullet server in a separate process with the chosen robot model
+    server_process = multiprocessing.Process(target=pybullet_server, args=(args.robot, args.port))
+    server_process.start()
+
+
     # Load models
     langsam_model = LangSAM()
     xmem_model = XMem(config.xmem_config, "./XMem/saves/XMem.pth", device).eval().to(device)
@@ -68,7 +153,7 @@ if __name__ == "__main__":
     close_gripper = api.close_gripper
     task_completed = api.task_completed
 
-    # Start process
+    # Start environment process
     env_process = Process(target=run_simulation_environment, name="EnvProcess", args=[args, env_connection, logger])
     env_process.start()
 
@@ -126,7 +211,6 @@ if __name__ == "__main__":
                                 error = True
 
             if error:
-
                 api.completed_task = False
                 api.failed_task = False
 
