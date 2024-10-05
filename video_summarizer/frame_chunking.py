@@ -2,7 +2,7 @@ import cv2
 import os
 
 
-class VideoProcessor:
+class FrameChunker:
     """
     A class to handle video processing tasks such as extracting key frames
     at specified intervals.
@@ -59,6 +59,6 @@ class VideoProcessor:
 if __name__ == "__main__":
     video_path = "video.mp4"
 
-    video_processor = VideoProcessor(video_path)
+    video_processor = FrameChunker(video_path)
 
     key_frames = video_processor.extract_key_frames(interval=1)
