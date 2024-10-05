@@ -33,8 +33,13 @@ joint_start_positions_franka = [0.0, 0.0, 0.0, -1.5708, 0.0, 1.8675, 0.0, 0.04, 
 ee_start_position = [0.0, 0.6, 0.55]
 ee_start_orientation_e = [0.0, math.pi, -math.pi / 2]
 
-object_start_position = [random.uniform(-0.2, 0.2), random.uniform(0.4, 0.8), 0.1]
-object_start_orientation_e = [0.0, 0.0, random.uniform(-math.pi, math.pi)]
+# Cola can use-case
+object_start_position_can_1 = [random.uniform(-0.2, 0.2), random.uniform(0.4, 0.8), 0.1]
+object_start_orientation_e_can_1 = [0.0, 0.0, random.uniform(-math.pi, math.pi)]
+object_start_position_can_2 = [random.uniform(-0.2, 0.2), random.uniform(0.4, 0.8), 0.1]
+object_start_orientation_e_can_2 = [0.0, 0.0, random.uniform(-math.pi, math.pi)]
+object_start_position_can_3 = [random.uniform(-0.2, 0.2), random.uniform(0.4, 0.8), 0.1]
+object_start_orientation_e_can_3 = [0.0, 0.0, random.uniform(-math.pi, math.pi)]
 
 global_scaling = 0.08
 
