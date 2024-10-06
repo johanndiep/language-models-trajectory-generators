@@ -17,7 +17,7 @@ import requests
 import pickle
 import io
 
-def get_langsam_output_client(image_path, model, segmentation_texts, segmentation_count):
+def get_langsam_output(image_path, model, segmentation_texts, segmentation_count):
     # Serialize the model
     model_bytes = pickle.dumps(model)
     # printing debug info
