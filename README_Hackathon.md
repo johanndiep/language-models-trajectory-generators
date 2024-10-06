@@ -24,7 +24,7 @@ First, we separate the human demonstration video into individual frames. To keep
 
 After extracting the keyframes, we used Pixtral and Mistral Large to create a summary of the video. We started by generating an initial description based on the first frame using Pixtral. Then, with the same model we created descriptions for each pair of consecutive frames and the previous description, capturing the changes over time. Finally, we summarized all these descriptions into a cohesive summary using the Mistral Large model. Another Mistral Large model then converted this summary into a robot command.
 
-## Branch Information
+# Repository
 - **main_mistral_london_hackathon**: Main runcode for this hackathon. 
 - **sem_keyframe_and_server_accel**: Adds additional features in semantic keyframe extration and Nexus server acceleration for simulated object segmentation.
 - **main_mistral**: Contains the simulation with Mistral models finetuned on custom manipulation dataset. 
@@ -34,45 +34,46 @@ After extracting the keyframes, we used Pixtral and Mistral Large to create a su
 
 ### Prerequisites
 
-- Python 3.8 or higher
-- pip (Python package installer)
+This codebase has been successfully tested on Ubuntu 22.04.5 LTS.
 
 ### Installation
 
-1. **Clone the Repository**:
+1. **Clone the repository**:
     ```sh
     git clone -b main_mistral_london_hackathon https://github.com/johanndiep/language-models-trajectory-generators.git
     cd language-models-trajectory-generators
     ```
 
-2. **Initialize and Update Submodules**:
+2. **Initialize and update submodules**:
     ```sh
     git submodule init
     git submodule update
     ```
 
-3. **Install Dependencies**:
+3. **Install dependencies**:
     ```sh
     pip install -r requirements.txt
     ```
 
-4. **Set Up Configuration**:
+4. **Setup configuration**:
     - Update `config.py` with your API keys and endpoints for the Mistral model.
     ```
     mkdir -p images/trajectory
     mkdir XMem/saves
     wget -P XMem/saves https://github.com/hkchengrex/XMem/releases/download/v1.0/XMem.pth
     ``` 
+
 5. **Run the simulation**:
     ```sh
     python main.py --robot franka
-    ```    
-### Running the Server
+    ```  
 
-To start the server for remote processing:
+### Running the Nexus Server
+
+To start the server for accelerated remote processing of the simulated object segmentation:
 
 ```sh
-python server.py # at the Server
+python server.py
 ```
 
-for the client side, change the name of models_server_client.py to models.py. Rest eveything will remain the same thoughout the process. Please note that the client code converts the model into a file and then sends it over to the server. For this reason your computer might seem to hang up for a while. Do not worry, it is just the big size of the model being managed.
+For the client side, change the name of `models_server_client.py` to `models.py`. Rest will remain the same thoughout the process. Please note that the client code converts the model into a file and then sends it over to the server. For this reason your computer might seem to hang up for a while. Do not worry, it is just the big size of the model being managed.
