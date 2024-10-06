@@ -72,7 +72,7 @@ class FrameChunker:
             frames.append(image)
             success, image = vidcap.read()
         length = len(frames)
-        print(f"Total frames using VitEncoder: {length}")
+
 
         image_frames = list(map(Image.fromarray, frames))
         
@@ -81,30 +81,35 @@ class FrameChunker:
             if torch.backends.mps.is_available()
             else "cuda" if torch.cuda.is_available() else "cpu"
         )
-        print(f"in VitEncoder device: {device}")
+
 
         encoder = VitEncoder(device=device)
 
-        chunker = ConsecutiveChunker(encoder=encoder, score_threshold=0.8)
+        chunker = ConsecutiveChunker(encoder=encoder, score_threshold=0.9)
 
         chunks = chunker(docs=[image_frames])
-        print(f"in VitEncoder chunks identified: {len(chunks)}")
 
-        f, axarr = plt.subplots(len(chunks[0]), 3, figsize=(20, 5))
         
+        # Ensure the frames directory exists
+        frames_dir = "frames"
+        os.makedirs(frames_dir, exist_ok=True)
+
         for i, chunk in enumerate(chunks[0]):
-            axarr[i, 0].imshow(chunk.splits[0])
+            # Save the first split
+            first_split_path = os.path.join(frames_dir, f"chunk_{i}_1.png")
+            chunk.splits[0].save(first_split_path)
+
+            # Calculate the middle index
             num_docs = len(chunk.splits)
             mid = num_docs // 2
-            axarr[i, 1].imshow(chunk.splits[mid])
-            axarr[i, 2].imshow(chunk.splits[num_docs - 1])
 
-        # saving chunks as frames in frames folder
-        for i, chunk in enumerate(chunks[0]):
-            for j, doc in enumerate(chunk.splits):
-                frame_file = os.path.join(self.frames_dir, f"frame_{i}_{j}.jpg")
-                doc.save(frame_file)
+            # Save the middle split
+            mid_split_path = os.path.join(frames_dir, f"chunk_{i}_2.png")
+            chunk.splits[mid].save(mid_split_path)
 
+            # Save the last split
+            last_split_path = os.path.join(frames_dir, f"chunk_{i}_3.png")
+            chunk.splits[num_docs - 1].save(last_split_path)
         return chunks
     
     def consecutive_chunker(self):
@@ -120,7 +125,7 @@ class FrameChunker:
             frames.append(image)
             success, image = vidcap.read()
         length = len(frames)
-        print(f"Total frames using VitEncoder: {length}")
+
 
         image_frames = list(map(Image.fromarray, frames))
 
@@ -130,7 +135,7 @@ class FrameChunker:
             if torch.backends.mps.is_available()
             else "cuda" if torch.cuda.is_available() else "cpu"
         )
-        print(f"Using '{device}'")
+
 
         encoder = VitEncoder(device=device)
 
@@ -138,20 +143,29 @@ class FrameChunker:
 
         chunks = chunker(docs=[image_frames])
 
-        f, axarr = plt.subplots(len(chunks[0]), 3, figsize=(20, 5))
-        
-        for i, chunk in enumerate(chunks[0]):
-            axarr[i, 0].imshow(chunk.splits[0])
-            num_docs = len(chunk.splits)
-            mid = num_docs // 2
-            axarr[i, 1].imshow(chunk.splits[mid])
-            axarr[i, 2].imshow(chunk.splits[num_docs - 1])
+
 
         # saving chunks as frames in frames folder
+        # Ensure the frames directory exists
+        frames_dir = "frames"
+        os.makedirs(frames_dir, exist_ok=True)
+        
         for i, chunk in enumerate(chunks[0]):
-            for j, doc in enumerate(chunk.splits):
-                frame_file = os.path.join(self.frames_dir, f"frame_{i}_{j}.jpg")
-                doc.save(frame_file)
+            # Save the first split
+            first_split_path = os.path.join(frames_dir, f"chunk_{i}_1.png")
+            chunk.splits[0].save(first_split_path)
+        
+            # Calculate the middle index
+            num_docs = len(chunk.splits)
+            mid = num_docs // 2
+        
+            # Save the middle split
+            mid_split_path = os.path.join(frames_dir, f"chunk_{i}_2.png")
+            chunk.splits[mid].save(mid_split_path)
+        
+            # Save the last split
+            last_split_path = os.path.join(frames_dir, f"chunk_{i}_3.png")
+            chunk.splits[num_docs - 1].save(last_split_path)
 
         return chunks
 
