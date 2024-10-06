@@ -1,8 +1,12 @@
-# *Le CopyChat* - Hackathon Project
+# Inspiration
 
-This project is based on the original work found in the [main branch README](README.md) (credit to the original author). It was developed as a part of a Mithiral hackathon and includes new features and enhancements to the original project. 
+Today’s robots are like computers from the 80s - very complicated and only usable by experts with years of experience. Programming them to do even one simple task is tough and requires a lot of technical knowledge. For robots to become everyday helpers, whether for repetitive tasks or heavy object lifting, learning new skills needs to be much easier.
 
-***Le CopyChat*** revolutionizes how robots learn by enabling them to mimic tasks demonstrated by humans through simple video footage1. By extracting keyframes and summarizing actions, Le CopyChat translates these into commands that robots can follow. This approach simplifies robot programming, making it accessible for everyday tasks. Developed during the Mistral AI London Hackathon, the project showcases a pipeline that allows robots to learn new skills from videos, much like humans do.
+Most of us learn new skills by watching YouTube tutorials. The question is, can robots do the same - learn a skill just by watching a human in a video?
+
+# Introduction
+
+Le CopyChat revolutionizes how robots learn by enabling them to mimic tasks demonstrated by humans through simple video footages. By extracting keyframes and summarizing actions using Pixtral, Le CopyChat translates these into commands that robots can follow. This approach simplifies robot programming, making it accessible for everyday tasks. Developed during the Mistral AI London Hackathon, the project showcases a pipeline that allows robots to learn new skills from videos, much like humans do.
 
 ## Branch Information
 - **main** - Original project with the OpenAI model.
