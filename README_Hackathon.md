@@ -56,12 +56,12 @@ This codebase has been successfully tested on Ubuntu 22.04.5 LTS.
     ```
 
 4. **Setup configuration**:
-    - Update `config.py` with your API keys and endpoints for the Mistral model.
     ```
     mkdir -p images/trajectory
     mkdir XMem/saves
     wget -P XMem/saves https://github.com/hkchengrex/XMem/releases/download/v1.0/XMem.pth
     ``` 
+    Update `config.py` with your API keys and endpoints for the Mistral model.
 
 5. **Run the simulation**:
     ```sh
