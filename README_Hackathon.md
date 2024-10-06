@@ -24,7 +24,7 @@ First, we separate the human demonstration video into individual frames. To keep
 
 After extracting the keyframes, we used Pixtral and Mistral Large to create a summary of the video. We started by generating an initial description based on the first frame using Pixtral. Then, with the same model we created descriptions for each pair of consecutive frames and the previous description, capturing the changes over time. Finally, we summarized all these descriptions into a cohesive summary using the Mistral Large model. Another Mistral Large model then converted this summary into a robot command.
 
-# Repository
+# Branches within this Code Repository
 - **main_mistral_london_hackathon**: Main runcode for this hackathon. 
 - **sem_keyframe_and_server_accel**: Adds additional features in semantic keyframe extration and Nexus server acceleration for simulated object segmentation.
 - **main_mistral**: Contains the simulation with Mistral models finetuned on custom manipulation dataset. 
