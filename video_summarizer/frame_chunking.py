@@ -19,7 +19,7 @@ class FrameChunker:
         self.cap = cv2.VideoCapture(self.video_path)
         self.fps = self.cap.get(cv2.CAP_PROP_FPS)
 
-        self.frames_dir = os.path.join(os.getcwd(), "frames/plate")
+        self.frames_dir = os.path.join(os.getcwd(), "frames")
         if not os.path.exists(self.frames_dir):
             os.makedirs(self.frames_dir)
 
@@ -57,7 +57,7 @@ class FrameChunker:
 
 
 if __name__ == "__main__":
-    video_path = "frames/plate/video.mp4"
+    video_path = "frames/can_stack/video.mp4"
 
     video_processor = FrameChunker(video_path)
 
