@@ -8,11 +8,21 @@ Most of us learn new skills by watching YouTube tutorials. The question is, can 
 
 # Introduction
 
+Le CopyChat revolutionizes how robots learn by enabling them to mimic tasks demonstrated by humans through simple video footages. By extracting keyframes and summarizing actions using Pixtral, Le CopyChat translates these into commands that robots can follow. This approach simplifies robot programming, making it accessible for everyday tasks. Developed during the Mistral AI London Hackathon, the project showcases a pipeline that allows robots to learn new skills from videos, much like humans do.
+
+For robots to become everyday helpers, whether for repetitive tasks or heavy lifting, we need to make teaching them as simple as watching a tutorial video.
+
+In a [previous Mistral hackathon](youtube.com/watch?v=_vsRd8RsCKo), we showed that a fine-tuned Mistral LLM could generate code to control a robot just by understanding natural language robot commands, such as "build a can tower" or "put the can on a plate". For the current hackathon, we took it further by adding a video summarizer that watches a human demonstration, summarizes the actions in the video, and translates them into commands the robot can follow.
+
+# Architecture
+
 ![Keyframes](https://github.com/johanndiep/language-models-trajectory-generators/blob/main_mistral_london_hackathon/readme_img/img2.png?raw=true)
 
 ![Summary](https://github.com/johanndiep/language-models-trajectory-generators/blob/main_mistral_london_hackathon/readme_img/img3.png?raw=true)
 
-Le CopyChat revolutionizes how robots learn by enabling them to mimic tasks demonstrated by humans through simple video footages. By extracting keyframes and summarizing actions using Pixtral, Le CopyChat translates these into commands that robots can follow. This approach simplifies robot programming, making it accessible for everyday tasks. Developed during the Mistral AI London Hackathon, the project showcases a pipeline that allows robots to learn new skills from videos, much like humans do.
+First, we separate the human demonstration video into individual frames. To keep only the important frames where distinct human actions occur, we used a method based on visual embedding similarity to get the keyframes.
+
+After extracting the keyframes, we used Pixtral and Mistral Large to create a summary of the video. We started by generating an initial description based on the first frame using Pixtral. Then, with the same model we created descriptions for each pair of consecutive frames and the previous description, capturing the changes over time. Finally, we summarized all these descriptions into a cohesive summary using the Mistral Large model. Another Mistral Large model then converted this summary into a robot command.
 
 ## Branch Information
 - **main** - Original project with the OpenAI model.
