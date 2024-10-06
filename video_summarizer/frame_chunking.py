@@ -5,6 +5,11 @@ import torch
 from semantic_router.encoders import VitEncoder
 from semantic_chunkers import ConsecutiveChunker
 import matplotlib.pyplot as plt
+from PIL import Image
+import torch
+from semantic_router.encoders import VitEncoder
+from semantic_chunkers import ConsecutiveChunker
+import matplotlib.pyplot as plt
 
 class FrameChunker:
     """
@@ -169,12 +174,123 @@ class FrameChunker:
 
         return chunks
 
+    def semantic_segmentation_VitEncoder(self):
+        """
+        Perform semantic segmentation on the video frames to identify objects and their
+        locations in the video.
+        """
+        vidcap = cv2.VideoCapture(self.video_path)
+
+        frames = []
+        success, image = vidcap.read()
+        while success:
+            frames.append(image)
+            success, image = vidcap.read()
+        length = len(frames)
+
+
+        image_frames = list(map(Image.fromarray, frames))
+        
+        device = (
+            "mps"
+            if torch.backends.mps.is_available()
+            else "cuda" if torch.cuda.is_available() else "cpu"
+        )
+
+
+        encoder = VitEncoder(device=device)
+
+        chunker = ConsecutiveChunker(encoder=encoder, score_threshold=0.9)
+
+        chunks = chunker(docs=[image_frames])
+
+        
+        # Ensure the frames directory exists
+        frames_dir = "frames"
+        os.makedirs(frames_dir, exist_ok=True)
+
+        for i, chunk in enumerate(chunks[0]):
+            # Save the first split
+            first_split_path = os.path.join(frames_dir, f"chunk_{i}_1.png")
+            chunk.splits[0].save(first_split_path)
+
+            # Calculate the middle index
+            num_docs = len(chunk.splits)
+            mid = num_docs // 2
+
+            # Save the middle split
+            mid_split_path = os.path.join(frames_dir, f"chunk_{i}_2.png")
+            chunk.splits[mid].save(mid_split_path)
+
+            # Save the last split
+            last_split_path = os.path.join(frames_dir, f"chunk_{i}_3.png")
+            chunk.splits[num_docs - 1].save(last_split_path)
+        return chunks
+    
+    def consecutive_chunker(self):
+        """
+        Perform semantic segmentation on the video frames to identify objects and their
+        locations in the video.
+        """
+        vidcap = cv2.VideoCapture(self.video_path)
+
+        frames = []
+        success, image = vidcap.read()
+        while success:
+            frames.append(image)
+            success, image = vidcap.read()
+        length = len(frames)
+
+
+        image_frames = list(map(Image.fromarray, frames))
+
+        # Initialize the encoder
+        device = (
+            "mps"
+            if torch.backends.mps.is_available()
+            else "cuda" if torch.cuda.is_available() else "cpu"
+        )
+
+
+        encoder = VitEncoder(device=device)
+
+        chunker = ConsecutiveChunker(encoder=encoder, score_threshold=0.912)
+
+        chunks = chunker(docs=[image_frames])
+
+
+
+        # saving chunks as frames in frames folder
+        # Ensure the frames directory exists
+        frames_dir = "frames"
+        os.makedirs(frames_dir, exist_ok=True)
+        
+        for i, chunk in enumerate(chunks[0]):
+            # Save the first split
+            first_split_path = os.path.join(frames_dir, f"chunk_{i}_1.png")
+            chunk.splits[0].save(first_split_path)
+        
+            # Calculate the middle index
+            num_docs = len(chunk.splits)
+            mid = num_docs // 2
+        
+            # Save the middle split
+            mid_split_path = os.path.join(frames_dir, f"chunk_{i}_2.png")
+            chunk.splits[mid].save(mid_split_path)
+        
+            # Save the last split
+            last_split_path = os.path.join(frames_dir, f"chunk_{i}_3.png")
+            chunk.splits[num_docs - 1].save(last_split_path)
+
+        return chunks
+
 
 if __name__ == "__main__":
+    video_path = "video.mp4"
     video_path = "video.mp4"
 
     video_processor = FrameChunker(video_path)
 
     # key_frames = video_processor.extract_key_frames(interval=1)
-    key_frames = video_processor.semantic_segmentation_VitEncoder()
-    # key_frames = video_processor.consecutive_chunker()
+    # key_frames = video_processor.semantic_segmentation_VitEncoder()
+    key_frames = video_processor.consecutive_chunker()

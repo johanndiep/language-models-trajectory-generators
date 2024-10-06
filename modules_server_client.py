@@ -13,35 +13,45 @@ sys.path.append("./XMem/")
 from XMem.inference.inference_core import InferenceCore
 from XMem.inference.interact.interactive_utils import image_to_torch, index_numpy_to_one_hot_torch, torch_prob_to_numpy_mask, overlay_davis
 
-def get_langsam_output(image, model, segmentation_texts, segmentation_count):
+import requests
+import pickle
+import io
 
-    segmentation_texts = " . ".join(segmentation_texts)
+def get_langsam_output(image_path, model, segmentation_texts, segmentation_count):
+    # Serialize the model
+    model_bytes = pickle.dumps(model)
+    # printing debug info
+    print("entered get_langsam_output_client")
+    # API endpoint
+    server_url = "http://195.242.23.14:8000/process_image/"
 
-    masks, boxes, phrases, logits = model.predict(image, segmentation_texts)
+    # Open the image file and send it to the server along with the serialized model
+    with open(image_path, "rb") as image_file:
+        files = {
+            "file": image_file,
+            "model_file": io.BytesIO(model_bytes),  # Send the model as a file-like object. this will take some time and might even hang up your computer. Do not worry.
+        }
+        data = {
+            "segmentation_texts": segmentation_texts,
+            "segmentation_count": segmentation_count,
+        }
+        response = requests.post(server_url, files=files, data=data)
 
-    _, ax = plt.subplots(1, 1 + len(masks), figsize=(5 + (5 * len(masks)), 5))
-    [a.axis("off") for a in ax.flatten()]
-    ax[0].imshow(image)
-
-    for i, (mask, box, phrase) in enumerate(zip(masks, boxes, phrases)):
-        to_tensor = transforms.PILToTensor()
-        image_tensor = to_tensor(image)
-        box = box.unsqueeze(dim=0)
-        image_tensor = draw_bounding_boxes(image_tensor, box, colors=["red"], width=3)
-        image_tensor = draw_segmentation_masks(image_tensor, mask, alpha=0.5, colors=["cyan"])
-        to_pil_image = transforms.ToPILImage()
-        image_pil = to_pil_image(image_tensor)
-
-        ax[1 + i].imshow(image_pil)
-        ax[1 + i].text(box[0][0], box[0][1] - 15, phrase, color="red", bbox={"facecolor":"white", "edgecolor":"red", "boxstyle":"square"})
-
-    plt.savefig(config.langsam_image_path.format(object=segmentation_count))
-    plt.show()
-
-    masks = masks.float()
+    # Parse the server's response
+    response_data = response.json()
+    masks = torch.tensor(response_data["masks"])
+    boxes = [torch.tensor(box) for box in response_data["boxes"]]
+    phrases = response_data["phrases"]
 
     return masks, boxes, phrases
 
+# # Example usage with a placeholder model
+# # Replace with your actual model instance
+# model = torch.hub.load('pytorch/vision', 'fasterrcnn_resnet50_fpn', pretrained=True)
+# model.eval()
+
+# # Use the updated function
+# masks, boxes, phrases = get_langsam_output_client("your_image_path.jpg", model, ["example text"], 1)
 
 
 def get_chatgpt_output(model, new_prompt, messages, role, file=sys.stdout):
