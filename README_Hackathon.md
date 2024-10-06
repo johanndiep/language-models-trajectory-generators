@@ -18,9 +18,9 @@ In a [previous Mistral hackathon](youtube.com/watch?v=_vsRd8RsCKo), we showed th
 
 ![Keyframes](https://github.com/johanndiep/language-models-trajectory-generators/blob/main_mistral_london_hackathon/readme_img/img2.png?raw=true)
 
-![Summary](https://github.com/johanndiep/language-models-trajectory-generators/blob/main_mistral_london_hackathon/readme_img/img3.png?raw=true)
-
 First, we separate the human demonstration video into individual frames. To keep only the important frames where distinct human actions occur, we used a method based on visual embedding similarity to get the keyframes.
+
+![Summary](https://github.com/johanndiep/language-models-trajectory-generators/blob/main_mistral_london_hackathon/readme_img/img3.png?raw=true)
 
 After extracting the keyframes, we used Pixtral and Mistral Large to create a summary of the video. We started by generating an initial description based on the first frame using Pixtral. Then, with the same model we created descriptions for each pair of consecutive frames and the previous description, capturing the changes over time. Finally, we summarized all these descriptions into a cohesive summary using the Mistral Large model. Another Mistral Large model then converted this summary into a robot command.
 
