@@ -12,7 +12,7 @@ Le CopyChat revolutionizes how robots learn by enabling them to mimic tasks demo
 
 For robots to become everyday helpers, whether for repetitive tasks or heavy lifting, we need to make teaching them as simple as watching a tutorial video.
 
-In a [previous Mistral hackathon](youtube.com/watch?v=_vsRd8RsCKo), we showed that a fine-tuned Mistral LLM could generate code to control a robot just by understanding natural language robot commands, such as "build a can tower" or "put the can on a plate". For the current hackathon, we took it further by adding a video summarizer that watches a human demonstration, summarizes the actions in the video, and translates them into commands the robot can follow.
+In a [previous Mistral hackathon](https://www.youtube.com/watch?v=_vsRd8RsCKo), we showed that a fine-tuned Mistral LLM could generate code to control a robot just by understanding natural language robot commands, such as "build a can tower" or "put the can on a plate". For the current hackathon, we took it further by adding a video summarizer that watches a human demonstration, summarizes the actions in the video, and translates them into commands the robot can follow.
 
 # Architecture
 
